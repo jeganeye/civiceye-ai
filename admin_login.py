@@ -27,22 +27,15 @@ if "username" not in st.session_state:
 
 # ---------------- BACKGROUND ----------------
 def set_bg(image_file=None):
-    # White background
     st.markdown(
         """
         <style>
         .stApp {
-            background-color: white;  /* White background */
-            color: black;             /* Dark text */
-        }
-        .stTextInput>div>div>input {
-            background-color: #f0f0f0;
+            background-color: white;
             color: black;
         }
-        .stTextArea>div>div>textarea {
-            background-color: #f0f0f0;
-            color: black;
-        }
+        .stTextInput>div>div>input,
+        .stTextArea>div>div>textarea,
         .stSelectbox>div>div>div>select {
             background-color: #f0f0f0;
             color: black;
@@ -71,7 +64,7 @@ if selected_type != st.session_state.user_type:
 
 # ================= ADMIN LOGIN =================
 if st.session_state.user_type == "Admin":
-    set_bg()  # White background
+    set_bg()
 
     if st.session_state.page == "login":
         st.title("Admin Login")
@@ -94,10 +87,10 @@ if st.session_state.user_type == "Admin":
             df = pd.read_csv("complaints.csv").reset_index(drop=True)
             st.dataframe(df, use_container_width=True)
 
-            st.markdown("### Update Complaint Status")
+            st.markdown("### Manage Complaints")
 
             for i in range(len(df)):
-                col1, col2, col3 = st.columns([4, 3, 2])
+                col1, col2, col3, col4 = st.columns([4, 3, 2, 2])
 
                 with col1:
                     st.write(df.loc[i, "Issue"])
@@ -120,12 +113,20 @@ if st.session_state.user_type == "Admin":
                         df.to_csv("complaints.csv", index=False)
                         st.success("Status updated")
                         st.rerun()
+
+                with col4:
+                    if st.button("Delete", key=f"delete_{i}"):
+                        df.drop(index=i, inplace=True)
+                        df.reset_index(drop=True, inplace=True)
+                        df.to_csv("complaints.csv", index=False)
+                        st.success("Complaint deleted")
+                        st.rerun()
         else:
             st.warning("No complaints found")
 
 # ================= USER LOGIN =================
 if st.session_state.user_type == "User":
-    set_bg()  # White background
+    set_bg()
 
     if st.session_state.page == "login":
         st.title("User Login")
@@ -134,8 +135,6 @@ if st.session_state.user_type == "User":
         password_input = st.text_input("Password", type="password")
 
         if st.button("Login"):
-
-            # ✅ BLOCK EMPTY LOGIN (CRITICAL FIX)
             if username_input.strip() == "" or password_input.strip() == "":
                 st.error("Invalid username or password")
                 st.stop()
@@ -158,7 +157,6 @@ if st.session_state.user_type == "User":
                 else:
                     df.loc[df["Username"] == username_input, "LoggedIn"] = True
                     df.to_csv("users.csv", index=False)
-
                     st.session_state.logged_in = True
                     st.session_state.username = username_input
                     st.session_state.page = "user"
@@ -166,7 +164,6 @@ if st.session_state.user_type == "User":
             else:
                 df.loc[len(df)] = [username_input, password_input, True]
                 df.to_csv("users.csv", index=False)
-
                 st.session_state.logged_in = True
                 st.session_state.username = username_input
                 st.session_state.page = "user"
@@ -174,7 +171,6 @@ if st.session_state.user_type == "User":
 
     # ================= USER COMPLAINT PAGE =================
     if st.session_state.page == "user" and st.session_state.logged_in:
-
         st.title("CivicEye AI - Submit Complaint")
 
         model = joblib.load("issue_classifier.pkl")
@@ -215,7 +211,6 @@ if st.session_state.logged_in and st.session_state.user_type == "User":
         df = pd.read_csv("users.csv")
         df.loc[df["Username"] == st.session_state.username, "LoggedIn"] = False
         df.to_csv("users.csv", index=False)
-
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.session_state.page = "login"
