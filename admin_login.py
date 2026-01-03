@@ -65,6 +65,7 @@ if st.session_state.user_type == "Admin":
 
     if st.session_state.page == "login":
         st.title("Admin Login")
+
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -75,6 +76,28 @@ if st.session_state.user_type == "Admin":
                 st.rerun()
             else:
                 st.error("Invalid username or password")
+
+        st.info(
+            """
+            **CivicEye AI – Administrative Portal**
+
+            CivicEye AI is a digital grievance management system designed to help government
+            authorities and administrators efficiently monitor, manage, and resolve citizen complaints.
+
+            **Primary focus areas monitored through this system:**
+            1. Road damage and public infrastructure issues  
+            2. Water supply and sanitation problems  
+            3. Streetlight and electricity faults  
+            4. Waste management and cleanliness concerns  
+            5. Public safety and civic facility maintenance  
+
+            **How this portal is used:**
+            - View all complaints submitted by citizens
+            - Track complaint status in real time
+            - Update resolution progress
+            - Remove invalid or resolved complaints
+            """
+        )
 
     if st.session_state.page == "admin" and st.session_state.logged_in:
         st.title("Admin Dashboard")
@@ -87,7 +110,6 @@ if st.session_state.user_type == "Admin":
             st.markdown("### Manage Complaints")
 
             for i in range(len(df)):
-                # Added a 4th column for the Delete button
                 col1, col2, col3, col4 = st.columns([3, 2, 1.5, 1.5])
 
                 with col1:
@@ -113,7 +135,6 @@ if st.session_state.user_type == "Admin":
                         st.rerun()
 
                 with col4:
-                    # NEW DELETE BUTTON FOR EVERY ROW
                     if st.button("🗑️ Delete", key=f"del_btn_{i}"):
                         df = df.drop(index=i).reset_index(drop=True)
                         df.to_csv("complaints.csv", index=False)
@@ -166,6 +187,28 @@ if st.session_state.user_type == "User":
                 st.session_state.username = username_input
                 st.session_state.page = "user"
                 st.rerun()
+
+        st.info(
+            """
+            **Welcome to CivicEye AI – Citizen Complaint Portal**
+
+            CivicEye AI allows citizens to report and track public service issues
+            directly to the concerned authorities in a transparent and efficient manner.
+
+            **You can report problems related to:**
+            1. Damaged roads and unsafe infrastructure  
+            2. Drinking water shortages and sanitation issues  
+            3. Non-functioning streetlights or power problems  
+            4. Garbage collection and cleanliness concerns  
+            5. Public safety and basic civic facilities  
+
+            **How to use this portal:**
+            - Log in with your username and password
+            - Submit a complaint with clear issue details
+            - Track the status of your complaint
+            - Ensure faster and accountable resolution
+            """
+        )
 
     # ================= USER COMPLAINT PAGE =================
     if st.session_state.page == "user" and st.session_state.logged_in:
