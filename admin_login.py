@@ -24,18 +24,13 @@ if "page" not in st.session_state:
     st.session_state.page = "login"
 if "username" not in st.session_state:
     st.session_state.username = ""
-if "delete_index" not in st.session_state:
-    st.session_state.delete_index = None
 
 # ---------------- BACKGROUND ----------------
 def set_bg(image_file=None):
     st.markdown(
         """
         <style>
-        .stApp {
-            background-color: white;
-            color: black;
-        }
+        .stApp { background-color: white; color: black; }
         .stTextInput>div>div>input,
         .stTextArea>div>div>textarea,
         .stSelectbox>div>div>div>select {
@@ -89,10 +84,10 @@ if st.session_state.user_type == "Admin":
             df = pd.read_csv("complaints.csv").reset_index(drop=True)
             st.dataframe(df, use_container_width=True)
 
-            st.markdown("### Manage Complaints")
+            st.markdown("### Update Complaint Status")
 
             for i in range(len(df)):
-                col1, col2, col3, col4 = st.columns([4, 3, 2, 2])
+                col1, col2, col3 = st.columns([4, 3, 2])
 
                 with col1:
                     st.write(df.loc[i, "Issue"])
@@ -116,27 +111,22 @@ if st.session_state.user_type == "Admin":
                         st.success("Status updated")
                         st.rerun()
 
-                with col4:
-                    if st.button("Delete", key=f"delete_{i}"):
-                        st.session_state.delete_index = i
+            # -------- CLOUD-SAFE DELETE SECTION --------
+            st.markdown("### Delete Complaint")
 
-            if st.session_state.delete_index is not None:
-                st.warning("Are you sure you want to delete this complaint?")
-                col_yes, col_no = st.columns(2)
+            delete_index = st.number_input(
+                "Enter complaint row number to delete",
+                min_value=0,
+                max_value=len(df) - 1,
+                step=1
+            )
 
-                with col_yes:
-                    if st.button("Yes, Delete"):
-                        df.drop(index=st.session_state.delete_index, inplace=True)
-                        df.reset_index(drop=True, inplace=True)
-                        df.to_csv("complaints.csv", index=False)
-                        st.session_state.delete_index = None
-                        st.success("Complaint deleted")
-                        st.rerun()
-
-                with col_no:
-                    if st.button("Cancel"):
-                        st.session_state.delete_index = None
-                        st.rerun()
+            if st.button("Delete Selected Complaint"):
+                df.drop(index=delete_index, inplace=True)
+                df.reset_index(drop=True, inplace=True)
+                df.to_csv("complaints.csv", index=False)
+                st.success("Complaint deleted successfully")
+                st.rerun()
         else:
             st.warning("No complaints found")
 
