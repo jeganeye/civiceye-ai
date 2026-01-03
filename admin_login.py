@@ -24,6 +24,8 @@ if "page" not in st.session_state:
     st.session_state.page = "login"
 if "username" not in st.session_state:
     st.session_state.username = ""
+if "delete_index" not in st.session_state:
+    st.session_state.delete_index = None
 
 # ---------------- BACKGROUND ----------------
 def set_bg(image_file=None):
@@ -116,10 +118,24 @@ if st.session_state.user_type == "Admin":
 
                 with col4:
                     if st.button("Delete", key=f"delete_{i}"):
-                        df.drop(index=i, inplace=True)
+                        st.session_state.delete_index = i
+
+            if st.session_state.delete_index is not None:
+                st.warning("Are you sure you want to delete this complaint?")
+                col_yes, col_no = st.columns(2)
+
+                with col_yes:
+                    if st.button("Yes, Delete"):
+                        df.drop(index=st.session_state.delete_index, inplace=True)
                         df.reset_index(drop=True, inplace=True)
                         df.to_csv("complaints.csv", index=False)
+                        st.session_state.delete_index = None
                         st.success("Complaint deleted")
+                        st.rerun()
+
+                with col_no:
+                    if st.button("Cancel"):
+                        st.session_state.delete_index = None
                         st.rerun()
         else:
             st.warning("No complaints found")
