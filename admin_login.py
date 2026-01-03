@@ -84,13 +84,14 @@ if st.session_state.user_type == "Admin":
             df = pd.read_csv("complaints.csv").reset_index(drop=True)
             st.dataframe(df, use_container_width=True)
 
-            st.markdown("### Update Complaint Status")
+            st.markdown("### Manage Complaints")
 
             for i in range(len(df)):
-                col1, col2, col3 = st.columns([4, 3, 2])
+                # Added a 4th column for the Delete button
+                col1, col2, col3, col4 = st.columns([3, 2, 1.5, 1.5])
 
                 with col1:
-                    st.write(df.loc[i, "Issue"])
+                    st.write(f"**Issue:** {df.loc[i, 'Issue']}")
 
                 with col2:
                     current_status = df.loc[i, "Status"]
@@ -111,22 +112,13 @@ if st.session_state.user_type == "Admin":
                         st.success("Status updated")
                         st.rerun()
 
-            # -------- CLOUD-SAFE DELETE SECTION --------
-            st.markdown("### Delete Complaint")
-
-            delete_index = st.number_input(
-                "Enter complaint row number to delete",
-                min_value=0,
-                max_value=len(df) - 1,
-                step=1
-            )
-
-            if st.button("Delete Selected Complaint"):
-                df.drop(index=delete_index, inplace=True)
-                df.reset_index(drop=True, inplace=True)
-                df.to_csv("complaints.csv", index=False)
-                st.success("Complaint deleted successfully")
-                st.rerun()
+                with col4:
+                    # NEW DELETE BUTTON FOR EVERY ROW
+                    if st.button("🗑️ Delete", key=f"del_btn_{i}"):
+                        df = df.drop(index=i).reset_index(drop=True)
+                        df.to_csv("complaints.csv", index=False)
+                        st.warning("Complaint deleted")
+                        st.rerun()
         else:
             st.warning("No complaints found")
 
